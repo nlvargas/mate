@@ -26,10 +26,11 @@ environ.Env.read_env()
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = '0%+2v+r$utagrju12qmk_m#^6g%54y!renalz5y9ng@a2kp4*e'
 
+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['riko.app', '.riko.app']
 
 
 # Application definition
