@@ -49,11 +49,10 @@ export default function CreateTemplate(props) {
     modules.forEach(mod => {
       r.push("Disponibilidad " + mod)
     })
-    const prefsNum = [...Array(preferencesNumber).keys()].map(i => i + 1)
-    prefsNum.forEach(pref => {
+    while (prefNumber <= preferencesNumber) {
       r.push("Preferencia " + prefNumber.toString())
       prefNumber++;
-    })
+    }
     let ws_data = []
     ws_data.push(r)
     let ws = XLSX.utils.aoa_to_sheet(ws_data);
@@ -86,7 +85,8 @@ export default function CreateTemplate(props) {
         <button onClick={addPreference}> Agregar preferencia </button>
         <p></p>
         <label>Numero de preferencias a elegir</label>
-        <select value={preferencesNumber} onChange={(e) => setPreferencesNumber(e.target.value)}>
+        <select value={preferencesNumber} onChange={(e) => {
+          setPreferencesNumber(parseInt(e.target.value))}}>
         {preferencesNumberOptions.map((x,y) => (<option key={y}>{x}</option>))}
         </select>
       </div>
