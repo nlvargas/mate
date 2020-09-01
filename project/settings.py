@@ -30,7 +30,7 @@ SECRET_KEY = '0%+2v+r$utagrju12qmk_m#^6g%54y!renalz5y9ng@a2kp4*e'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['riko.app', '.riko.app']
+ALLOWED_HOSTS = ['riko.app', '.riko.app', '164.90.231.193']
 
 
 # Application definition
@@ -149,5 +149,14 @@ SECURE_FRAME_DENY               = False
 
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static/')
+
+STATICFILES_FINDERS = (
+'django.contrib.staticfiles.finders.AppDirectoriesFinder',
+'django.contrib.staticfiles.finders.FileSystemFinder',
+)
+
+STATICFILES_DIR = [
+os.path.join(BASE_DIR, 'static'),
+]
 
 django_heroku.settings(locals())
