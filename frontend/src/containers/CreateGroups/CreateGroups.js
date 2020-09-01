@@ -4,15 +4,36 @@ import axios from 'axios';
 const style = {cont: {backgroundColor: "lightgray", padding: 25, flex: 1, backgroundSize: 'cover', align: 'center'},
                cont2: {backgroundColor: "gray", padding: 5, flex: 1, backgroundSize: 'cover', align: 'center'}}
 
+function Loader() {
+  return (
+    <div className="loader center">
+      <i className="fa fa-cog fa-spin" />
+    </div>
+  );
+}
+
 
 export default function CreateGroups(props) {
   const { step, setStep, groupsNumber, setGroupsNumber,
           minStudents, setMinStudents, maxStudents, setMaxStudents,
           attributes, setAttributes, preferences, setPreferences,
-          modules, setModules, preferencesNumber,
-          options, students, capacity, setCapacity, setGroups, setFactible} = props;
+          modules, setModules, preferencesNumber, tmax, setTmax,
+          options, students, capacity, setCapacity, setGroups, setFactible,
+          sameDay, setSameDay } = props;
+
+  const [buttonText, setButtonText] = useState("Generar grupos")
+  const [loading, setLoading] = useState(true);
   const [bounds, setBounds] = useState({});
   const [prefsBounds, setPrefsBounds] = useState({});
+  let fDay = {}
+  modules.forEach(module => {
+    fDay[module] = {};
+    preferences.forEach(pref => {
+      fDay[module][pref] = false;
+    })
+  })
+  const [fixedDay, setFixedDay] = useState(fDay);
+  
 
   function validate() {
     if (students.length/groupsNumber <= maxStudents && students.length/groupsNumber >= minStudents) {
@@ -36,23 +57,32 @@ export default function CreateGroups(props) {
         preferencesNumber,
         options,
         prefsBounds,
-        modules })
-        console.log(prefsBounds)
-        alert("Presione OK para correr el modelo. Este proceso podría tardar unos minutos. ")
-        const result = await axios.post('/api/run_model/', body)
+        modules,
+        tmax,
+        sameDay,
+        fixedDay })
+        setButtonText("Creando grupos...")
+        const result = await axios.post('/api/run_model/', body);
         const json_result = JSON.parse(result.data)
         setGroups(json_result.results);
         setFactible(json_result.factible)
+        setButtonText("Generar grupos")
         setStep(step + 1)
     }
   }
 
   useEffect(() => {
     let cap = {}
+    let fDay = {}
     modules.forEach(module => {
       cap[module] = students.length;
+      fDay[module] = {};
+      preferences.forEach(pref => {
+        fDay[module][pref] = false;
+      })
     })
-    setCapacity(cap)
+    setFixedDay(fDay);
+    setCapacity(cap);
   }, []);
 
   function createAttributes() {
@@ -89,6 +119,10 @@ export default function CreateGroups(props) {
           Maximo de estudiantes por grupo:
           <input style={{float:"right", width: "60px"}}  size="4" type="number" name="maxStudents" onChange={(e) => setMaxStudents(parseInt(e.target.value))}/>
           </tr>)
+        optionsToShow.push(<tr>
+          Tiempo máximo para asignar los grupos (en minutos):
+          <input style={{float:"right", width: "60px"}}  size="4" type="number" name="maxStudents" defaultValue={tmax} onChange={(e) => setTmax(parseInt(e.target.value))}/>
+          </tr>)
     return optionsToShow
   };
 
@@ -96,12 +130,18 @@ export default function CreateGroups(props) {
     let table = []
     preferences.forEach(pref => {
         table.push(<tr><Preference pref={pref} 
-                                  setPrefsBounds={setPrefsBounds}
-                                  prefsBounds={prefsBounds}
-                                  groupsNumber={groupsNumber}/></tr>)
+                                   setPrefsBounds={setPrefsBounds}
+                                   prefsBounds={prefsBounds} 
+                                   groupsNumber={groupsNumber}/></tr>)
     })
     return table
   };
+
+  function editFixedDay(mod, pref, value) {
+    let f = fixedDay[mod];
+    f[pref] = value;
+    setFixedDay({...fixedDay, mod: f});
+  }
 
   return (
       <div>
@@ -134,17 +174,21 @@ export default function CreateGroups(props) {
               <div key={students.length}>
               <label> Capacidad {mod}: </label>
               <input style={{float:"right", width: "60px"}} defaultValue={students.length || ""} size="4" type="number" name={mod} onChange={(e) => editModule(e, mod)}/> 
+              {preferences.map((pref, index) => {
+                return <tr> Preferencia {pref} solo en este modulo: <button onClick={() => editFixedDay(mod, pref, !fixedDay[mod][pref])}> {fixedDay[mod][pref] ? "Desactivar" : "Activar"} </button></tr>
+              })}
               </div>
               </p>
             )
         })}
+        <tr> Grupos con la misma preferencia deben ser asignados el mismo dia: <button onClick={() => setSameDay(!sameDay)}> {sameDay ? "Desactivar" : "Activar"} </button></tr>
       </div>
       <p></p>
         <button onClick={() => setStep(step - 1)}>
           Atras
         </button>
         <button onClick={runModelRequest}>
-          Generar grupos
+          {buttonText}
         </button>
       </div>
     );

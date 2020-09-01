@@ -169,6 +169,8 @@ def run_modules(params):
     I = list(students.keys())  # alumnos
     G_t = defaultdict(list)  # grupos asociados al tema t
     G_d = defaultdict(list)  # grupos asociados al dia/seccion d
+
+
     for g in G:
         for p in preferences:
             if "Grupo {} - ".format(p) in g:
@@ -197,11 +199,25 @@ def run_modules(params):
     F = pulp.LpVariable.dicts("F", comb(G, A), cat='Continuous') 
     M = pulp.LpVariable.dicts("M", G, lowBound=0, cat='Continuous')
     M_max = pulp.LpVariable("M_max", cat='Continuous')
+    u = pulp.LpVariable.dicts("u", comb(preferences, D), cat='Binary')  # 1 si el grupo G queda asignado al dia D
+
     
     #O = pulp.LpVariable.dicts("O", big_index, cat='Binary')
     # -------------------- Constraints --------------------
-    #print("PRIORITY")
-    #print(priority)
+
+    for mod in params['fixedDay']:
+        for pref in params['fixedDay'][mod]:
+            if params['fixedDay'][mod][pref]:
+                if mod != "mod":
+                    model += (u[pref, mod]  == 0, "Preferencia {} no puede quedar en {}".format(pref, mod))
+
+    if params['sameDay']:
+        for p in preferences:
+            for d in D:
+                model += (pulp.lpSum([w[g] for g in set(G_t[p]).intersection(set(G_d[d]))]) <= groups_number*u[p, d],
+                    "Activacion de u {} {}".format(p, d))
+        for p in preferences:
+            model += (pulp.lpSum([u[p, d] for d in D]) <= 1, "Restriccion de u {}".format(p))
 
     for g in G:
         model += (pulp.lpSum([y[i, g] for i in not_answered]) <= 1 + M[g],
@@ -286,7 +302,11 @@ def run_modules(params):
         [100 * M_max]
         #[100 * O[i, j, a, g] for i in I for j in I for a in A for g in G]
     )
-    model.solve()
+    if params["tmax"]:
+        model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, maxSeconds=60*params["tmax"], msg=True))
+    else:
+        model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, msg=True))
+
     pulp.LpStatus[model.status]
     results = []
     for g in G:

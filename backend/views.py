@@ -17,11 +17,11 @@ def count_options(students, options):
                 attributes[a] = 1
             else:
                 attributes[a] += 1
-
     opts = {attr: {} for attr in options}
     for attr in options:
         for opt in options[attr]:
-            opts[attr][opt] = attributes[opt]
+            if opt != "None":
+                opts[attr][opt] = attributes[opt]
     return opts
 
 class Student:
@@ -60,7 +60,6 @@ class Student:
 def upload(request):
     f = request.FILES['file']
     wb = load_workbook(filename=BytesIO(f.read()))
-    print(request.POST)
     attributes = request.POST["attributes"].split(",")
     modules = request.POST["modules"].split(",")
     preferences_number = int(request.POST["preferencesNumber"][0])
@@ -146,7 +145,6 @@ def run_model(request):
                 preferences[p] = data['prefsBounds'][p]
             else:
                 preferences[p] = {"min": 0, "max": data['groupsNumber']}
-        #print(students)
         for s in students:
             a = {}
             for i, m in enumerate(data["modules"]):
@@ -162,12 +160,13 @@ def run_model(request):
                   'students': students,
                   'capacity': data['capacity'],
                   'modules': data['modules'],
-                  'A': options}
+                  'A': options,
+                  'tmax': int(data['tmax']),
+                  'sameDay': data['sameDay'],
+                  'fixedDay': data['fixedDay']}
         if data['modules']:
-            print("ABOUT to run this shiet")
             res = json.dumps(run_modules(params))
         else:
             res = json.dumps(run(params))
-        print(res)
         return Response(res, status=status.HTTP_200_OK)
 

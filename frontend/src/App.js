@@ -8,9 +8,6 @@ import CreateGroups from './containers/CreateGroups/CreateGroups';
 import ShowGroups from './containers/ShowGroups/ShowGroups';
 
 
-const history = createBrowserHistory();
-
-
 function WizardForm(props) {
   const [attributes, setAttributes] = useState([]);
   const [preferences, setPreferences] = useState([]);
@@ -25,8 +22,10 @@ function WizardForm(props) {
   const [capacity, setCapacity] = useState({});
   const [step, setStep] = useState(1);
   const [bounds, setBounds] = useState({});
-  const [groups, setGroups] = useState(null);
-  const [factible, setFactible] = useState(true);
+  const [groups, setGroups] = useState([]);
+  const [factible, setFactible] = useState(false);
+  const [tmax, setTmax] = useState(90);
+  const [sameDay, setSameDay] = useState(false);
 
   function wizard() {
     switch (step) {
@@ -55,12 +54,14 @@ function WizardForm(props) {
                               setAttributesBounds={setAttributesBounds}
                               capacity={capacity} setCapacity={setCapacity}
                               minStudents={minStudents} setMinStudents={setMinStudents}
-                              maxStudents={maxStudents} setMaxStudents={setMaxStudents} 
+                              maxStudents={maxStudents} setMaxStudents={setMaxStudents}
                               groupsNumber={groupsNumber} setGroupsNumber={setGroupsNumber}
                               bounds={bounds} setBounds={setBounds}
                               preferencesNumber={preferencesNumber}
                               setGroups={setGroups}
-                              setFactible={setFactible} />
+                              setFactible={setFactible}
+                              tmax={tmax} setTmax={setTmax}
+                              sameDay={sameDay} setSameDay={setSameDay} />
       case 4: return <ShowGroups step={step} setStep={setStep} 
                                  groups={groups} students={students}
                                  attributes={attributes}
