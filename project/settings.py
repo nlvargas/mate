@@ -30,7 +30,7 @@ SECRET_KEY = '0%+2v+r$utagrju12qmk_m#^6g%54y!renalz5y9ng@a2kp4*e'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['riko.app', '.riko.app', '164.90.231.193']
+ALLOWED_HOSTS = ['riko.app', '.riko.app', '164.90.231.193', 'localhost']
 
 
 # Application definition
@@ -82,16 +82,7 @@ WSGI_APPLICATION = 'project.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'mate',
-        'USER': 'postgres',
-        'PASSWORD': 'jumperchile12',
-        'PORT': '5432',
-        'HOST': 'localhost',
-    }
-}
+DATABASES = {}
 
 
 # Password validation

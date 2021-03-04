@@ -6,15 +6,17 @@ import CreateTemplate from './containers/CreateTemplate/CreateTemplate';
 import UploadTemplate from './containers/UploadTemplate/UploadTemplate';
 import CreateGroups from './containers/CreateGroups/CreateGroups';
 import ShowGroups from './containers/ShowGroups/ShowGroups';
+import cookie from 'react-cookies';
 
 
 function WizardForm(props) {
-  const [attributes, setAttributes] = useState([]);
-  const [preferences, setPreferences] = useState([]);
-  const [modules, setModules] = useState([]);
+  console.log("ATTRIBUTES", attributes);
+  const [attributes, setAttributes] = useState(cookie.get('attributes'));
+  const [preferences, setPreferences] = useState(cookie.get('preferences'));
+  const [modules, setModules] = useState(cookie.get('modules'));
   const [options, setOptions] = useState({});
   const [attributesBounds, setAttributesBounds] = useState({});
-  const [preferencesNumber, setPreferencesNumber] = useState(0);
+  const [preferencesNumber, setPreferencesNumber] = useState(cookie.get('preferences_number'));
   const [groupsNumber, setGroupsNumber] = useState('Groups');
   const [minStudents, setMinStudents] = useState('Min');
   const [maxStudents, setMaxStudents] = useState('Max');

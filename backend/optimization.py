@@ -1,10 +1,56 @@
 from collections import defaultdict
 import pulp
 
+def generate_modules(params):
+    capacity = params["capacity"]
+    modules = params["modules"]
+    attributes = params["student_attr"]
+    students = params["students"]
+    A = params["A"]
+    I = list(students.keys()) 
+    asignation = {mod: [s for s in students if int(students[s]["a"][mod]) == 1 and 
+                        sum(int(students[s]["a"][m]) for m in modules) == 1] 
+                  for mod in modules}
+    ready = {mod: False for mod in modules}
+    for i in I:
+        isIn = False
+        attrs = [students[i]["attributes"][attr] for attr in students[i]["attributes"]]
+        available_modules = [mod for mod in modules if not ready[mod]]
+        counter = {mod: {a: 0 for a in attrs} for mod in available_modules}
+        total_counter = {mod: 0 for mod in available_modules}
+        for mod in available_modules:
+            for s in asignation[mod]:
+                if i == s:
+                    isIn = True
+                    break
+                for a in attrs:
+                    if int(attributes[s][a]) == 1:
+                        counter[mod][a] += 1
+                        total_counter[mod] += 1
+        if not isIn:
+            # deberia ir ponderado por la cantidad de opciones de cada atributo
+            avg_counter = {mod: {a: round(counter[mod][a]/len(asignation[mod]), 5) for a in attrs} 
+                           for mod in modules}
+            avg_total_counter = {mod: round(total_counter[mod]/len(asignation[mod]), 5) for mod in modules}
+            min_mod = min(avg_total_counter, key=avg_total_counter.get)
+            asignation[min_mod].append(i)
+            if len(asignation[min_mod]) == capacity[min_mod]:
+                ready[min_mod] = True
+    # show results
+    results = {mod: {a: 0 for a in A} for mod in modules}
+    for mod in modules:
+        for s in asignation[mod]:
+            for a in A:
+                if int(attributes[s][a]) == 1:
+                    results[mod][a] += 1
+    # print(results)
+    for mod in modules:
+        print(len(asignation[mod]))
+    return asignation
+ 
 
 def comb(x_list, y_list):
     return ((x, y) for x in x_list for y in y_list)
-
 
 def prefered_groups(student, G):
     gr = []
@@ -12,7 +58,6 @@ def prefered_groups(student, G):
         groups = list(filter(lambda g: "Grupo {} - ".format(preference) in g, G))
         gr = gr + groups
     return gr
-
 
 def run(params):
     # -------------------- Params --------------------
@@ -137,7 +182,11 @@ def run(params):
         [100 * M_max]
         #[100 * O[i, j, a, g] for i in I for j in I for a in A for g in G]
     )
-    model.solve()
+    if params["tmax"]:
+        model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, maxSeconds=60*params["tmax"]*0.90, msg=True))
+    else:
+        model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, msg=True))
+
     pulp.LpStatus[model.status]
 
     results = []
@@ -303,7 +352,7 @@ def run_modules(params):
         #[100 * O[i, j, a, g] for i in I for j in I for a in A for g in G]
     )
     if params["tmax"]:
-        model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, maxSeconds=60*params["tmax"], msg=True))
+        model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, maxSeconds=60*params["tmax"]*0.90, msg=True))
     else:
         model.solve(pulp.PULP_CBC_CMD(fracGap = 0.1, msg=True))
 

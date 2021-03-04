@@ -1,6 +1,7 @@
 import React, { useState, Button } from 'react';
 import XLSX from 'xlsx';
 import { saveAs } from 'file-saver';
+import cookie from 'react-cookies';
 
 function s2ab(s) { 
   var buf = new ArrayBuffer(s.length); 
@@ -38,6 +39,21 @@ export default function CreateTemplate(props) {
     setNewModule("");
   }
 
+  function removePreference(index) {
+    p = preferences.splice(index, 1)
+    setPreferences(p);
+  }
+
+  function removeModule(index) {
+    m = modules.splice(index, 1)
+    setModules(m);
+  }
+
+  function removeAttribute(index) {
+    a = attributes.splice(index, 1)
+    setAttributes(a);
+  }
+
   function generateTemplate() {
     let wb = XLSX.utils.book_new();
     wb.SheetNames.push("Alumnos");
@@ -66,6 +82,10 @@ export default function CreateTemplate(props) {
   }
 
   function next() {
+    cookie.save('attributes', JSON.stringify(attributes), { path: '/' })
+    cookie.save('modules', JSON.stringify(modules), { path: '/' })
+    cookie.save('preferences', JSON.stringify(preferences), { path: '/' })
+    cookie.save('preferences_number', JSON.stringify(preferencesNumber), { path: '/' })
     setStep(step + 1)
   }
 
@@ -73,14 +93,14 @@ export default function CreateTemplate(props) {
       <div style={{justifyContent:'center', alignItems:'center'}}>
       <div style={style.cont}>
         <h3> Atributos </h3>
-        {attributes.map((item, index) => (<p> {item} </p>))}
+        {attributes.map((item, index) => (<p onClick={() => removeAttribute(index)}> {item} </p>))}
         <input type="text" value={newAttribute} onChange={(e) => setNewAttribute(e.target.value)}/>
         <button onClick={addAttribute}> Agregar atributo </button>
       </div>
       <p></p> 
       <div style={style.cont}>
         <h3> Preferencias </h3>
-        {preferences.map((item, index) => (<p> {item} </p>))}
+        {preferences.map((item, index) => (<p onClick={() => removePreference(index)}> {item} </p>))}
         <input type="text" value={newPreference} onChange={(e) => setNewPreference(e.target.value)}/>
         <button onClick={addPreference}> Agregar preferencia </button>
         <p></p>
@@ -93,7 +113,7 @@ export default function CreateTemplate(props) {
       <p></p>
       <div style={style.cont}>
         <h3> Modulos </h3>
-        {modules.map((item, index) => (<p> {item} </p>))}
+        {modules.map((item, index) => (<p onClick={() => removeModule(index)}> {item} </p>))}
         <input type="text" value={newModule} onChange={(e) => setNewModule(e.target.value)}/>
         <button onClick={addModule}> Agregar modulo </button>  
       </div>

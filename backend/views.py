@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.decorators import api_view
-from .optimization import run, run_modules
+from .optimization import run, run_modules, generate_modules
 import openpyxl
 from io import BytesIO
 from collections import OrderedDict, defaultdict
@@ -48,7 +48,10 @@ class Student:
         for i, j in zip(disponibilities_name, self.disponibilities):
             if j == 1:
                 self.flexibility += 1
-            self.a[i] = int(j)
+            if j != "#N/A":
+                self.a[i] = int(j)
+            else:
+                self.a[i] = 1
 
     def get_priorities(self, groups):
         for i, preference in enumerate(self.preferences):
@@ -126,8 +129,10 @@ def run_model(request):
 
 
         for i in data["students"]:
+            print(i)
             i["attributes"] = i["modelAttributes"]
             i["preferences"] = i["modelPreferences"]
+            print(i["preferences"])
             if i["preferences"]["1"] == "#N/A":
                 i["answered"] = False
             else:
@@ -164,7 +169,9 @@ def run_model(request):
                   'tmax': int(data['tmax']),
                   'sameDay': data['sameDay'],
                   'fixedDay': data['fixedDay']}
+
         if data['modules']:
+            groups = generate_modules(params)
             res = json.dumps(run_modules(params))
         else:
             res = json.dumps(run(params))
